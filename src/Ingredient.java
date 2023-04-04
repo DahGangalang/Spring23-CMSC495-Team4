@@ -5,6 +5,7 @@
 public class Ingredient {
     
     //Fields for data storage
+    Metadata metadata;
     String ingredientName;
     String unitOfMeasure;
     String quantity;
@@ -17,7 +18,7 @@ public class Ingredient {
         this.unitOfMeasure = sUOM;
         this.quantity = floatToFractionConversion(f);
 
-    }
+    } //End Constructor
 
     //Constructors for this class
     //Assumes qualtity will be presented in decimal format
