@@ -3,6 +3,7 @@
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,21 +20,38 @@ public class Recipe_Repository {
     private static void showMenu() {
 
         StringBuilder output = new StringBuilder();
-        output.append("1 - Display Entire Data");
-        output.append("2 - Search Data Base");
-        output.append("3 - Add new Recipe to database");
-        output.append("0 - Exit");
+        output.append("\n\n");
+        output.append("1 - Display Entire Data Base\n");
+        output.append("2 - Search Data Base\n");
+        output.append("3 - Add new Recipe to database\n");
+        output.append("0 - Exit\n");
+        output.append(">");
+
+        System.out.printf("%s", output.toString());
     } //End ShowMenu
 
+    //readLinesFromFile was greatly helped by ChatGPT
     private static ArrayList<String> readLinesFromFile() throws IOException {
         
+        //Build a fileChooser that opens in the Present Working Directory
         JFileChooser fileChooser = new JFileChooser();
+        String currentDirectory = System.getProperty("user.dir");
+        File pwd = new File(currentDirectory);
+        fileChooser.setCurrentDirectory(pwd);
+
+        //Filter to only show text files
         fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
+        
+        //Finally choose the file and import it
         int result = fileChooser.showOpenDialog(null);
         if(result == JFileChooser.APPROVE_OPTION) {
+
+            //Read the file line by line and store to arraylist of strings
             ArrayList<String> lines = new ArrayList<>();
-            BufferedReader reader =new BufferedReader(new FileReader(fileChooser.getSelectedFile()));
+            BufferedReader reader  = new BufferedReader(new FileReader(fileChooser.getSelectedFile()));
             String line;
+            
+            //Until we reach the last line of the file...
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
             }
@@ -44,6 +62,7 @@ public class Recipe_Repository {
         else {
             return null;
         } //End else
+
     } //End readLinesFromFile
 
     private static void searchDataBase() {
@@ -54,21 +73,47 @@ public class Recipe_Repository {
 
         try {
             ArrayList<String> lines = readLinesFromFile();
-            dataBase.add(new Recipe(lines));
+            if(lines != null) {
+                dataBase.add(new Recipe(lines));
+            } //End if
+            else {
+                System.out.println("Error when reading recipe.");
+            } //End else
 
         } catch(Exception e) {
 
-        } //End Catch
+            System.out.println("Caught an exception in storeNewRecipe function");
+            e.printStackTrace();
+
+        } //End Try/Catch
+
     } //End storeNewRecipe
+
+    private static void displayEntries(int input) {
+
+        if(input == -1) {
+            for(Recipe recipe : dataBase) {
+                System.out.printf("\n%s\n\n", recipe.toString());
+            } //End For
+        } //End If
+
+        else {
+            System.out.printf("\n%s\n\n", dataBase.get(input).toString());
+        }
+
+    } //End displayEntries
 
     public static void main(String[] args) {
         
         //Dummy function calls to reduce errors during testing
-        searchDataBase();
-        storeNewRecipe();
+        //searchDataBase();
+        //storeNewRecipe();
 
         Scanner scanner = new Scanner(System.in);
         int userChoice;
+
+        //TODO: handle this 
+        dataBase = new ArrayList<>();
 
         try {
             //Main do-While loop of the program
@@ -81,7 +126,7 @@ public class Recipe_Repository {
                 switch(userChoice) {
 
                     case 1: 
-                        dataBase.toString();
+                        displayEntries(-1);
                         break;
 
                     case 2: 
@@ -97,8 +142,6 @@ public class Recipe_Repository {
                         System.exit(0);
                         
                     default:
-
-
 
                 } //End Switch
 

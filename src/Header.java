@@ -2,32 +2,94 @@
  * Class for storing the header information of a recipe
  */
 
+ import java.util.ArrayList;
+
 
 public class Header {
    
-    private String name;
+    private String title;
+    private String author;
+    private ArrayList<String> tags;
 
     //Constructor for class
-    public Header(String[] input) {
+    public Header(ArrayList<String> input) {
 
-        this.name = input[0];
+        //Initializing tags
+        this.tags = new ArrayList<>(1);
+
+        //Grab info from the input
+        for(String line : input) {
+            parseHeaderLines(line);
+        } //End For loop
+
+        //Fill in remainder of filled fields
+        if(title == null) {
+            this.title = "Unknown Recipe";
+        } //End If
+
+        if(author == null) {
+            this.author = "Anonymous";
+        }
 
     } //End Constructor
 
-    //
+    private void parseHeaderLines(String input) {
+
+        //read in title information
+        if(input.toLowerCase().contains("title")) {
+            //Split around a colon and store ending back to input
+            input = input.split(":", 2)[1];
+            input = Recipe_Tools.stripSurroundingWhiteSpace(input);
+            this.title = input;
+        } //End If
+
+        //Read in author information
+        if(input.toLowerCase().contains("author")) {
+            //Split around a colon and store ending back to input
+            input = input.split(":", 2)[1];
+            input = Recipe_Tools.stripSurroundingWhiteSpace(input);
+            this.author = input;
+        } //End If
+
+        //Read in tag information
+        if(input.toLowerCase().contains("tag")) {
+            //Split around a colon and store ending back to input
+            input = input.split(":", 2)[1];
+            
+            if(input.contains(",")) {
+                for(String s : input.split(",")) {
+                    this.tags.add(Recipe_Tools.stripSurroundingWhiteSpace(s));
+                } //End for
+            } //End If
+
+            else {
+                input = Recipe_Tools.stripSurroundingWhiteSpace(input);
+                this.tags.add(input);
+            } //End Else
+        } //End If
+        
+    } //End parseHeaderLines
+
     public String toString() {
+
         StringBuilder output = new StringBuilder();
-        output.append(name);
+        output.append(title + "\n");
+        output.append("Author:\t" + author + "\n");
+        for(String tag : tags) {
+            output.append(tag + "\n");
+        }
 
         return output.toString();
     } //End toString
 
     //Simple toString method for testing purposes
     public void toStringConsole() {
-        StringBuilder output = new StringBuilder();
-        output.append(name);
-
-        System.out.println(output.toString());
+        
+        System.out.println(this.toString());
     } //End toStringConsole
+
+    public String getTitle() {
+        return this.title;
+    }
 
 } //End Header

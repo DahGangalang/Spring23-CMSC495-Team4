@@ -7,14 +7,14 @@ import java.util.Date;
 
 public class Metadata {
 
-    Date addTime;
-    Date modifiedTime;
-    String user;            //To track the last user to make a modification
+    private Date creationDate;
+    private Date modifiedTime;
+    private String user;            //To track the last user to make a modification
 
     public Metadata() {
 
-        this.addTime = (new GregorianCalendar()).getTime();
-        this.modifiedTime = addTime;
+        this.creationDate = (new GregorianCalendar()).getTime();
+        this.modifiedTime = creationDate;
         this.user = "NOT IMPLEMENTED";
 
     } //End Coinstructor
@@ -22,5 +22,13 @@ public class Metadata {
     public void updateChangeTime() {
         this.modifiedTime = (new GregorianCalendar()).getTime();
     } //End updateChangeTime
+
+    public Date getCreationDate() {
+        return this.creationDate;
+    }
+
+    public Date getModifiedDate() {
+        return this.modifiedTime;
+    }
     
 } //End Metadata
