@@ -17,13 +17,19 @@ public class Recipe_Repository {
     //TODO: Build the database
     private static ArrayList<Recipe> dataBase;
 
+    //Function for 
     private static void showMenu() {
 
         StringBuilder output = new StringBuilder();
-        output.append("\n\n");
+        output.append("\n");
+        output.append("Main Menu\n");
+        output.append("------------------------------\n");
         output.append("1 - Display Entire Data Base\n");
-        output.append("2 - Search Data Base\n");
-        output.append("3 - Add new Recipe to database\n");
+        output.append("2 - Diplay Titles in Data Base\n");
+        output.append("3 - Search Data Base\n");
+        output.append("4 - Add new Recipe to database\n");
+        output.append("5 - Read in database\n");
+        output.append("6 - Write out database\n");
         output.append("0 - Exit\n");
         output.append(">");
 
@@ -89,25 +95,46 @@ public class Recipe_Repository {
 
     } //End storeNewRecipe
 
-    private static void displayEntries(int input) {
+    private static void displayEntries(String type) {
 
-        if(input == -1) {
-            for(Recipe recipe : dataBase) {
-                System.out.printf("\n%s\n\n", recipe.toString());
-            } //End For
+        //Make sure there's something in the database to display
+        if(dataBase.isEmpty()) {
+            System.out.println("\nDatabase is empty!");
+            return;
         } //End If
 
-        else {
-            System.out.printf("\n%s\n\n", dataBase.get(input).toString());
-        }
+        //TODO: Should we be using an enum here?
+        switch(type) {
 
+            //Option to dump entire database
+            case "allAll":
+                for(Recipe currRecipe : dataBase) {
+                    System.out.printf("\n%s\n\n", currRecipe.toString());
+                } //End For
+                return;     //Acting as a break, but should cut processing a tiny bit
+
+            //Option to show just the titles in the database
+            case "allTitles":
+                int i = 0;
+                for(Recipe currRecipe : dataBase) {
+                    System.out.printf("\n%d - %s\n", i++, currRecipe.getTitle());
+                } //End for loop
+                return;     //Acting as a break, but should cut processing a tiny bit
+
+            //Takes input and displays that recipe number
+            default:
+                try {
+                    int entryNumber = Integer.parseInt(type);
+                    System.out.printf("\n%s\n\n", dataBase.get(entryNumber).toString());
+                    return;
+                } catch(Exception e) {
+                    //TODO: implement error handling
+                } //End Try/Catch
+        } //End Switcjh
     } //End displayEntries
 
     public static void main(String[] args) {
         
-        //Dummy function calls to reduce errors during testing
-        //searchDataBase();
-        //storeNewRecipe();
 
         Scanner scanner = new Scanner(System.in);
         int userChoice;
@@ -126,15 +153,35 @@ public class Recipe_Repository {
                 switch(userChoice) {
 
                     case 1: 
-                        displayEntries(-1);
+                        displayEntries("allAll");
                         break;
 
-                    case 2: 
+                    case 2:
+                        displayEntries("allTitles");
+                        break;
+
+                    case 3: 
                         searchDataBase();
                         break;
 
-                    case 3:
+                    case 4:
                         storeNewRecipe();
+                        break;
+
+                    case 5:
+                        ArrayList<Recipe> tempList = Recipe_Tools.readDatabaseFromFile();
+                        if(tempList == null) {
+                            System.out.println("Something went wrong in reading Database.");
+                        }
+                        else {
+                            dataBase = tempList;
+                            tempList = null;
+                        }
+                        System.gc();                    //Attempts to clear null the tempList
+                        break;
+
+                    case 6:
+                        Recipe_Tools.writeDataBaseToFile(dataBase);
                         break;
 
                     case 0:

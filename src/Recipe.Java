@@ -3,9 +3,10 @@
  */
 
 import java.util.Date;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Recipe {
+public class Recipe implements Serializable {
 
     //Necessary fields
     private Metadata metadata;
@@ -86,6 +87,7 @@ public class Recipe {
         } //End For
     } //End ParseRecipe
 
+    @Override
     public String toString() { 
 
         StringBuilder output = new StringBuilder();

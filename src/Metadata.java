@@ -9,13 +9,13 @@ public class Metadata {
 
     private Date creationDate;
     private Date modifiedTime;
-    private String user;            //To track the last user to make a modification
+    //private String user;            //To track the last user to make a modification
 
     public Metadata() {
 
         this.creationDate = (new GregorianCalendar()).getTime();
         this.modifiedTime = creationDate;
-        this.user = "NOT IMPLEMENTED";
+        //this.user = "NOT IMPLEMENTED";
 
     } //End Coinstructor
 
