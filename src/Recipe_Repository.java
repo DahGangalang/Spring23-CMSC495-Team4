@@ -92,7 +92,6 @@ public class Recipe_Repository {
             e.printStackTrace();
 
         } //End Try/Catch
-
     } //End storeNewRecipe
 
     private static void displayEntries(String type) {
@@ -177,11 +176,11 @@ public class Recipe_Repository {
                             dataBase = tempList;
                             tempList = null;
                         }
-                        System.gc();                    //Attempts to clear null the tempList
+                        System.gc();                    //Attempts to clear null the tempList from memory
                         break;
 
                     case 6:
-                        Recipe_Tools.writeDataBaseToFile(dataBase);
+                        Recipe_Tools.exportRecipesToXML(dataBase);
                         break;
 
                     case 0:

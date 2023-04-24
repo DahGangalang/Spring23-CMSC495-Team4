@@ -88,8 +88,19 @@ public class Header {
         System.out.println(this.toString());
     } //End toStringConsole
 
+    //Getters 
     public String getTitle() {
         return this.title;
     }
+
+    public String getAuthor() {
+        return this.author;
+    }
+
+    public ArrayList<String> getTags() {
+        return this.tags;
+    }
+
+
 
 } //End Header

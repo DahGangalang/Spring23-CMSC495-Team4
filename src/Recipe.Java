@@ -118,4 +118,16 @@ public class Recipe implements Serializable {
         return this.metadata.getModifiedDate();
     } //End getCreationDate
 
+    public Header getHeader() {
+        return this.header;
+    }
+
+    public ArrayList<Ingredient> getIngredients() {
+        return this.ingredients;
+    }
+
+    public String getInstructions() {
+        return this.instructions;
+    }
+
 } //End Recipe

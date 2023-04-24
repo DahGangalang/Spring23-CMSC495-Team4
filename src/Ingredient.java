@@ -73,6 +73,15 @@ public class Ingredient {
         return output.toString();
     } //End of toString
 
+    //Getters
+    public String getIngredientName() {
+        return this.ingredientName;
+    }
+
+    public String getQuantity() {
+        return this.quantity;
+    }
+
 
     /*
      * OLD CODE
