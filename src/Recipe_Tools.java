@@ -39,6 +39,8 @@ public class Recipe_Tools {
         return input.substring(start, end + 1);
     } //End of stripSurroundingWhiteSpace
 
+    
+
     public static void exportRecipesToXML(ArrayList<Recipe> recipes)
             throws XMLStreamException, IOException {
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
