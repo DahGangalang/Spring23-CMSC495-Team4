@@ -117,8 +117,9 @@ public class Recipe_Repository {
             //Option to show just the titles in the database
             case "allTitles":
                 int i = 0;
+                System.out.println();
                 for(Recipe currRecipe : dataBase) {
-                    System.out.printf("\n%d - %s\n", i++, currRecipe.getTitle());
+                    System.out.printf("%d - %s\n", i++, currRecipe.getTitle());
                 } //End for loop
                 return;     //Acting as a break, but should cut processing a tiny bit
 
@@ -198,7 +199,7 @@ public class Recipe_Repository {
                         break;
 
                     case 5:
-                        ArrayList<Recipe> tempList = Recipe_Tools.readDatabaseFromFile();
+                        ArrayList<Recipe> tempList = null; //Recipe_Tools.readDatabaseFromFile();
                         if(tempList == null) {
                             System.out.println("Something went wrong in reading Database.");
                         }

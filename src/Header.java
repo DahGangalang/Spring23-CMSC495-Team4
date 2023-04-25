@@ -26,11 +26,11 @@ public class Header {
 
         //Fill in remainder of filled fields
         if(title == null) {
-            this.title = "Unknown Recipe";
+            this.title = "Title: Unknown Recipe";
         } //End If
 
         if(author == null) {
-            this.author = "Anonymous";
+            this.author = "Author: Anonymous";
         }
 
     } //End Constructor
