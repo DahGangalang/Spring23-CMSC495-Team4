@@ -7,15 +7,17 @@
 
 public class Header {
    
+    private long UID;
     private String title;
     private String author;
     private ArrayList<String> tags;
 
     //Constructor for class
-    public Header(ArrayList<String> input) {
+    public Header(ArrayList<String> input, long passedUID) {
 
         //Initializing tags
         this.tags = new ArrayList<>(1);
+        this.UID = passedUID;
 
         //Grab info from the input
         for(String line : input) {
@@ -99,6 +101,10 @@ public class Header {
 
     public ArrayList<String> getTags() {
         return this.tags;
+    }
+
+    public long getUID() {
+        return this.UID;
     }
 
 

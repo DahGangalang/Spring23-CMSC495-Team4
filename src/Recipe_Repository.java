@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.JFileChooser;
@@ -80,7 +81,8 @@ public class Recipe_Repository {
         try {
             ArrayList<String> lines = readLinesFromFile();
             if(lines != null) {
-                dataBase.add(new Recipe(lines));
+                Recipe tempRecipe = new Recipe(lines, generateUID());
+                dataBase.add(tempRecipe);
             } //End if
             else {
                 System.out.println("Error when reading recipe.");
@@ -131,6 +133,34 @@ public class Recipe_Repository {
                 } //End Try/Catch
         } //End Switcjh
     } //End displayEntries
+
+    //Generates a long int for use as the UID of recipes
+    //Doesn't need to be secure, just unique
+    private static long generateUID() {
+        
+        Random rand = new Random(dataBase.size());
+        Boolean isUnique = false;
+        long uid = rand.nextLong();
+
+        while(isUnique == false) {
+
+            //Reset data for next check
+            uid = rand.nextLong();
+            isUnique = true;
+
+            //Check is UID has been used
+            for(Recipe recipe : dataBase) {
+                if(recipe.getUID() == uid) {
+                    isUnique = false;
+                    break;      //Attempts to break from for loop
+                } //End of If
+            } //End of For
+        } //End of While
+        
+        rand = null;    //Attempts to clear the rand to free extra memory
+        return uid;
+
+    } //End of generateUID
 
     public static void main(String[] args) {
         

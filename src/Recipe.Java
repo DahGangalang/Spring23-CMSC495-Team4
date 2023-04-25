@@ -16,14 +16,14 @@ public class Recipe implements Serializable {
     //TODO: implement UID
 
     //Constructor for class
-    public Recipe(ArrayList<String> input) {
+    public Recipe(ArrayList<String> input, long passedUID) {
 
         this.metadata = new Metadata();
-        parseRecipe(input);
+        parseRecipe(input, passedUID);
 
     } //End Constructor
 
-    private void parseRecipe(ArrayList<String> input) {
+    private void parseRecipe(ArrayList<String> input, long passedUID) {
         
         StringBuilder instructionBuilder;
         ArrayList<String> passToConstructor;
@@ -47,7 +47,7 @@ public class Recipe implements Serializable {
                 passToConstructor.add(input.get(i));
                 i++;
             } //End While
-            this.header = new Header(passToConstructor);
+            this.header = new Header(passToConstructor, passedUID);
             i++;                                        //increment iterator to ignore end header line
             
             //Throw out anything before beginning of ingredients
@@ -128,6 +128,10 @@ public class Recipe implements Serializable {
 
     public String getInstructions() {
         return this.instructions;
+    }
+
+    public long getUID() {
+        return this.header.getUID();
     }
 
 } //End Recipe
