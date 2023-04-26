@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Add_Recipe_GUI extends JFrame {
     private JPanel mainPanel, ingredientsPanel, instructionsPanel;
@@ -121,16 +122,22 @@ public class Add_Recipe_GUI extends JFrame {
         index++;
     }
 
-    // store the recipe data in an array or do whatever you want with it
-    String[] recipeData = new String[ingredients.length + 2];
-    recipeData[0] = recipeName;
+    // store the recipe data in an arrayList to send to the toolbox to be further processed
+    ArrayList<String> recipeOutput = new ArrayList<>();
+    recipeOutput.add("***Section: Header");
+    recipeOutput.add("Title: " + recipeName);
+    //TODO: Implement Author Name input
+    recipeOutput.add("Author: User");
+    recipeOutput.add("***Section: Ingredients");
     for (int i = 0; i < ingredients.length; i++) {
-        recipeData[i + 1] = ingredients[i];
+        recipeOutput.add(ingredients[i]);
     }
-    recipeData[recipeData.length - 1] = instructions;
+    recipeOutput.add("***Section: Instructions");
+    recipeOutput.add(instructions);
+    Recipe_Tools.writeGuiInputToFile(recipeOutput);
 
     // print out the recipe data (just for demonstration purposes)
-    for (String data : recipeData) {
+    for (String data : recipeOutput) {
         System.out.println(data);
     }
 }

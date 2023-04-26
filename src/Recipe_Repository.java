@@ -29,8 +29,9 @@ public class Recipe_Repository {
         output.append("2 - Diplay Titles in Data Base\n");
         output.append("3 - Search Data Base\n");
         output.append("4 - Add new Recipe to database\n");
-        output.append("5 - Read in database\n");
-        output.append("6 - Write out database\n");
+        output.append("5 - Add new Recipe via GUI\n");
+        output.append("6 - Read in database\n");
+        output.append("7 - Write out database\n");
         output.append("0 - Exit\n");
         output.append(">");
 
@@ -38,37 +39,46 @@ public class Recipe_Repository {
     } //End ShowMenu
 
     //readLinesFromFile was greatly helped by ChatGPT
-    private static ArrayList<String> readLinesFromFile() throws IOException {
-        
-        //Build a fileChooser that opens in the Present Working Directory
-        JFileChooser fileChooser = new JFileChooser();
-        String currentDirectory = System.getProperty("user.dir");
-        File pwd = new File(currentDirectory);
-        fileChooser.setCurrentDirectory(pwd);
+    private static ArrayList<String> readLinesFromFile(File fileInput) throws IOException {
 
-        //Filter to only show text files
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
-        
-        //Finally choose the file and import it
-        int result = fileChooser.showOpenDialog(null);
-        if(result == JFileChooser.APPROVE_OPTION) {
+        File fileToUse = Recipe_Tools.getTempFile();
 
-            //Read the file line by line and store to arraylist of strings
-            ArrayList<String> lines = new ArrayList<>();
-            BufferedReader reader  = new BufferedReader(new FileReader(fileChooser.getSelectedFile()));
-            String line;
+        if(fileInput == null) {
+
+            //Build a fileChooser that opens in the Present Working Directory
+            JFileChooser fileChooser = new JFileChooser();
+            String currentDirectory = System.getProperty("user.dir");
+            File pwd = new File(currentDirectory);
+            fileChooser.setCurrentDirectory(pwd);
+
+            //Filter to only show text files
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
             
-            //Until we reach the last line of the file...
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            reader.close();
-            return lines;
-        } //End if
+            //Finally choose the file and import it
+            int result = fileChooser.showOpenDialog(null);
+            if(result == JFileChooser.APPROVE_OPTION) {
+                
+                fileToUse = fileChooser.getSelectedFile();
+                             
+                
+            } //End if
+        } //End of If
 
-        else {
-            return null;
-        } //End else
+        else{
+            fileToUse = fileInput;
+        }
+
+        //Read the file line by line and store to arraylist of strings
+        ArrayList<String> lines = new ArrayList<>();
+        BufferedReader reader  = new BufferedReader(new FileReader(fileToUse));
+        String line;
+        //Until we reach the last line of the file...
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);
+        }
+        reader.close();
+        return lines;
+
 
     } //End readLinesFromFile
 
@@ -76,10 +86,10 @@ public class Recipe_Repository {
         //TODO
     } //End searchDataBase
 
-    private static void storeNewRecipe() {
+    private static void storeNewRecipe(File fileInput) {
 
         try {
-            ArrayList<String> lines = readLinesFromFile();
+            ArrayList<String> lines = readLinesFromFile(fileInput);
             if(lines != null) {
                 Recipe tempRecipe = new Recipe(lines, generateUID());
                 dataBase.add(tempRecipe);
@@ -195,10 +205,15 @@ public class Recipe_Repository {
                         break;
 
                     case 4:
-                        storeNewRecipe();
+                        storeNewRecipe(null);
                         break;
 
                     case 5:
+                        Add_Recipe_GUI.main(null);
+                        storeNewRecipe(Recipe_Tools.getTempFile());
+                        break;
+
+                    case 6:
                         ArrayList<Recipe> tempList = null; //Recipe_Tools.readDatabaseFromFile();
                         if(tempList == null) {
                             System.out.println("Something went wrong in reading Database.");
@@ -210,7 +225,7 @@ public class Recipe_Repository {
                         System.gc();                    //Attempts to clear null the tempList from memory
                         break;
 
-                    case 6:
+                    case 7:
                         Recipe_Tools.exportRecipesToXML(dataBase);
                         break;
 

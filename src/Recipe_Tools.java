@@ -2,6 +2,7 @@
  * Toolbox for some minor functions used throughout the recipe repoistory 
  */
 
+import java.io.BufferedWriter;
 import java.io.File;
 //import java.io.FileInputStream;
 //import java.io.FileOutputStream;
@@ -18,6 +19,7 @@ import javax.xml.stream.XMLStreamWriter;
 public class Recipe_Tools {
 
     private static String DATABASEFILENAME = "LocalRecipeDataBase.wad";
+    private static String TEMPFILENAME = "/Recipe-Files/tempRecipeFile.txt";
     
     //For stripping out whitespace surrounding a string
     public static String stripSurroundingWhiteSpace(String input) {
@@ -39,7 +41,26 @@ public class Recipe_Tools {
         return input.substring(start, end + 1);
     } //End of stripSurroundingWhiteSpace
 
-    
+    public static File getTempFile() {
+        
+        String currentDirectory = System.getProperty("user.dir");
+        return new File(currentDirectory + TEMPFILENAME);
+    } //End of getTempFile
+
+    public static void writeGuiInputToFile(ArrayList<String> input) {
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(getTempFile(), false));
+            for(String s : input) {
+                writer.write(s);
+                writer.newLine();
+            } //End of For
+            writer.close();
+        } catch(Exception e) {
+            System.out.println("Something went wrong adding recipe from GUI!\n");
+            e.printStackTrace();
+        } //End of Try/Catch
+    } //End of writeGuiInputToFile
 
     public static void exportRecipesToXML(ArrayList<Recipe> recipes)
             throws XMLStreamException, IOException {
