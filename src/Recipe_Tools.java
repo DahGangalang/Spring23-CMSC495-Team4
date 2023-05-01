@@ -62,6 +62,73 @@ public class Recipe_Tools {
         } //End of Try/Catch
     } //End of writeGuiInputToFile
 
+    public static boolean hasMeasurement(String word) {
+        
+        //converts input to lowercase and removes any punctuation of easier switching
+        switch(word.toLowerCase().replaceAll("\\p{Punct}","")) {
+            case "lbs":
+            case "pound":
+            case "pounds":
+            case "kilo":
+            case "kilogram":
+            case "kilograms":
+            case "kg":
+            case "g":
+            case "gram":
+            case "grams":
+            case "miligram":
+            case "miligrams":
+            case "mililitre":
+            case "mililitres":
+            case "mililiter":
+            case "mililiters":
+            case "liter":
+            case "litre":
+            case "liters":
+            case "litres":
+            case "l":
+            case "cup":
+            case "cups":
+            case "c":
+            case "pint":
+            case "pints":
+            case "quart":
+            case "quarts":
+            case "qt":
+            case "gallon":
+            case "gallons":
+            case "gal":
+            case "tsp":
+            case "teaspoon":
+            case "teaspoons":
+            case "tbsp":
+            case "tablspoon":
+            case "tablspoons":
+            case "ounce":
+            case "oz":
+            case "ounces":
+            case "bottle":
+            case "bottles":
+            case "can":
+            case "cans":
+            case "stick":
+            case "sticks":
+            case "dash":
+            case "dashes":
+            case "loaf":
+            case "loaves":
+            case "pinch":
+            case "pinches":
+            case "dram":
+            case "drams":
+                return true;
+                
+        } //End of Case
+
+        return false;
+
+    } //End of hasMeasurement
+
     public static void exportRecipesToXML(ArrayList<Recipe> recipes)
             throws XMLStreamException, IOException {
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();

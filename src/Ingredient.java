@@ -4,13 +4,14 @@
  * Class for storing the totality of a recipe
  */
 
- import java.util.regex.PatternSyntaxException;
+import java.util.regex.PatternSyntaxException;
 
 public class Ingredient {
     
     //Fields for data storage
     Metadata metadata;
     String ingredientName;
+    String measurement;
     String quantity;
     Double quantityAsDouble;
 
@@ -21,13 +22,22 @@ public class Ingredient {
 
         try {
 
-            String[] splitInput = input.split(" ", 2);
+            String[] splitInput = input.split(" ", 3);
 
             try {
 
                 this.quantity = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[0]);
                 this.quantityAsDouble = Double.valueOf(quantity);
-                this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[1]);
+                if(Recipe_Tools.hasMeasurement(splitInput[1])) {
+                    this.measurement = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[1]);
+                    this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[2]);
+                } //End If
+                else {
+                    this.measurement = "";
+                    this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[1] + " " + splitInput[2]);
+                } //End Else
+                
+                
 
             } catch(NumberFormatException nfe) {
                 
@@ -40,9 +50,16 @@ public class Ingredient {
                  */
                 this.quantity = "1";
                 this.quantityAsDouble = 1.0d;
-                this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(input);
+                if(Recipe_Tools.hasMeasurement(splitInput[0])) {
+                    this.measurement = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[0]);
+                    this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(splitInput[1] + " " + splitInput[2]);   //Grab everything after the measurement
+                } //End If
+                else {
+                    this.measurement = "";
+                    this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(input);   //Can get the whole input if no measurement
+                } //End Else
 
-            }//End of Try/Catch
+            } //End of Try/Catch
 
 
         } catch(PatternSyntaxException pse) {
@@ -54,12 +71,11 @@ public class Ingredient {
              * e.g recipe says "onion" it really means "1 onion"
              */
             this.quantity = "1";
+            this.measurement = "";
             this.quantityAsDouble = Double.valueOf(quantity);
             this.ingredientName = Recipe_Tools.stripSurroundingWhiteSpace(input);
 
         } //End of Try/Catch
-
-        //TODO: code to trim excess white space from ingredient name
          
     } //End of Ingredient Constructor
 
@@ -68,6 +84,9 @@ public class Ingredient {
         StringBuilder output = new StringBuilder();
         output.append(quantity);
         output.append("x ");
+        if(measurement != "") {
+            output.append(measurement + " ");
+        }
         output.append(ingredientName);
 
         return output.toString();
