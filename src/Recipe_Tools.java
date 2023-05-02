@@ -4,12 +4,13 @@
 
 import java.io.BufferedWriter;
 import java.io.File;
-//import java.io.FileInputStream;
-//import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-//import java.io.ObjectInputStream;
-//import java.io.ObjectOutputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -18,7 +19,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 public class Recipe_Tools {
 
-    private static String DATABASEFILENAME = "LocalRecipeDataBase.wad";
+    private static String DATABASEFILENAME = "jdbc:sqlite:recipes.db";
     private static String TEMPFILENAME = "/Recipe-Files/tempRecipeFile.txt";
     
     //For stripping out whitespace surrounding a string
@@ -122,7 +123,7 @@ public class Recipe_Tools {
             case "dram":
             case "drams":
                 return true;
-                
+
         } //End of Case
 
         return false;
@@ -198,6 +199,43 @@ public class Recipe_Tools {
         xmlWriter.close();
         
     } //End of exportRecipesToXML
+
+    //Tries to connect to database or start a new if non-existant
+    public static void validateDatabase() {
+
+        try {
+
+            //Some basic variables for the database
+            Class.forName("org.sqlite.JDBC");
+            Connection conn = DriverManager.getConnection(DATABASEFILENAME);
+            String tableName = "recipes";
+
+            //Check if Table exists
+            DatabaseMetaData meta = conn.getMetaData();
+            ResultSet rule = meta.getTables(null, null, tableName, null);
+
+            //If the Table doesn't exist, create it
+            if(rule.next() == false) {
+                //Recipes table
+                Statement createRecipesStmt = conn.createStatement();
+                String createRecipesTableSql = "CREATE TABLE recipes (id INTEGER PRIMARY KEY, name TEXT, ingredients TEXT, instructions TEXT, created_at TEXT)";
+                createRecipesStmt.executeUpdate(createRecipesTableSql);
+
+                //If Recipes doesn't exist, seems fair that we'd need to make ingredients table too
+                //Ingredients table
+                Statement createIngredientsStmt = conn.createStatement();
+                String createIngredientsTableSql = "CREATE TABLE ingredients (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER, qty TEXT, measurement TEXT, ingredient TEXT, FOREIGN KEY(recipe_id) REFERENCES recipes(id))";
+                createIngredientsStmt.executeUpdate(createIngredientsTableSql);
+            }
+
+            //Be sure to close connections
+            conn.close();
+
+        } catch(Exception e) {
+            System.out.println("Error in Recipe_Tools.validateDatabase():\n");
+            e.printStackTrace();
+        } //End Try/Catch
+    } //End of validateDatabase
 
     /*
      *  Deprecated Code

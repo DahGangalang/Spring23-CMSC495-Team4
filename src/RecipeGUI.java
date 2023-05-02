@@ -90,14 +90,24 @@ public class RecipeGUI extends JFrame implements ActionListener {
       // create new fields for quantity, measurement type, and ingredient name
       JTextField qtyField = new JTextField(4);
       JComboBox < String > measurementCombo = new JComboBox < String > (new String[] {
-        "tsp",
-        "tbsp",
-        "oz",
-        "lb",
-        "cup",
-        "pint",
-        "quart",
-        "gallon"
+        "Teaspoon",
+        "Tablespoons",
+        "Ounce",
+        "Pound",
+        "Cup",
+        "Pint",
+        "Quart",
+        "Gallon",
+        "Kilogram",
+        "Gram",
+        "Mililiter",
+        "Liter",
+        "Bottle",
+        "Can",
+        "Stick",
+        "Dash",
+        "Pinch",
+        ""
       });
       JTextField ingredientField = new JTextField(20);
 
@@ -403,32 +413,9 @@ private void viewAllRecipes() {
     }
 }
   public static void main(String[] args) throws ClassNotFoundException {
-    try {
-      // create SQLite database connection
-      Class.forName("org.sqlite.JDBC");
-      Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
-
-      // create SQL statement for creating recipes table
-      String createRecipesTableSql = "CREATE TABLE recipes (id INTEGER PRIMARY KEY, name TEXT, ingredients TEXT, instructions TEXT, created_at TEXT)";
-
-      // execute SQL statement to create recipes table
-      Statement createRecipesStmt = conn.createStatement();
-      createRecipesStmt.executeUpdate(createRecipesTableSql);
-
-      // create SQL statement for creating ingredients table
-      String createIngredientsTableSql = "CREATE TABLE ingredients (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER, qty TEXT, measurement TEXT, ingredient TEXT, FOREIGN KEY(recipe_id) REFERENCES recipes(id))";
-
-      // execute SQL statement to create ingredients table
-      Statement createIngredientsStmt = conn.createStatement();
-      createIngredientsStmt.executeUpdate(createIngredientsTableSql);
-
-      // close database connection
-      conn.close();
-
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
     
+    Recipe_Tools.validateDatabase();
+
     SwingUtilities.invokeLater(() -> {
         RecipeGUI gui = new RecipeGUI();
         gui.setVisible(true);
