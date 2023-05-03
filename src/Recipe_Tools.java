@@ -9,9 +9,11 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -236,6 +238,69 @@ public class Recipe_Tools {
             e.printStackTrace();
         } //End Try/Catch
     } //End of validateDatabase
+
+    //Adds recipe to the SQL Database
+    public static void addRecipeFromFileToDatabase(Recipe recipe) {
+
+        //Pre-allocate some necessary variables
+        StringBuilder ingredientStringBuilder;
+        int recipeId;
+        ArrayList<Ingredient> ingredients = recipe.getIngredients();
+
+        //Access Database
+        try {
+
+            //Open SQLite database connection
+            Class.forName("org.sqlite.JDBC");
+            Connection conn = DriverManager.getConnection(DATABASEFILENAME);
+
+            //Create SQL statement for inserting recipe and ingredients
+            String insertSql = "INSERT INTO recipes (name, ingredients, instructions) VALUES (?, ?, ?)";
+            String insertIngSql = "INSERT INTO ingredients (recipe_id, qty, measurement, ingredient) VALUES (?, ?, ?, ?)";
+            String selectSql = "SELECT id FROM recipes WHERE name = ?";
+            PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+
+            //Set Values to be inserted in the database
+            insertStmt.setString(1, recipe.getTitle());
+            ingredientStringBuilder = new StringBuilder();
+            for(Ingredient ingredient : ingredients) {
+                ingredientStringBuilder.append(ingredient.toString());
+                ingredientStringBuilder.append("\n");
+            } //End of For
+            insertStmt.setString(2, ingredientStringBuilder.toString());
+            ingredientStringBuilder = null;
+            insertStmt.setString(3, recipe.getInstructions());
+
+            //Set the UID for the new recipe
+            ResultSet rs = insertStmt.getGeneratedKeys();
+            if(rs.next()) {
+                recipeId = rs.getInt(1);
+            } //End of IF
+            else {
+                recipeId = new Random(System.currentTimeMillis()).nextInt();
+            } //End of Else
+
+            // prepare statement for inserting ingredient
+            PreparedStatement insertIngStmt = conn.prepareStatement(insertIngSql);
+
+            //Iterate through ingredient to insert each
+            for(Ingredient ingredient : ingredients) {
+                insertIngStmt.setInt(1, recipeId);
+                insertIngStmt.setString(2, ingredient.getQuantity());
+                insertIngStmt.setString(3, ingredient.getMeasurement());
+                insertIngStmt.setString(4, ingredient.getIngredientName());
+                insertIngStmt.executeUpdate();
+            } //End of For
+
+            //Success Message
+            System.out.println("Successfully Added Recipe to Database");
+
+        } catch(Exception e) {
+            System.out.println("Error saving recipe: " + e.getMessage());
+            e.printStackTrace();
+        } //End of Try/Catch
+
+    } //End of addRecipeToDatabase
 
     /*
      *  Deprecated Code

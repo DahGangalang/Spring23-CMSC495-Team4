@@ -93,6 +93,7 @@ public class Recipe_Repository {
             if(lines != null) {
                 Recipe tempRecipe = new Recipe(lines, generateUID());
                 dataBase.add(tempRecipe);
+                Recipe_Tools.addRecipeFromFileToDatabase(tempRecipe);
             } //End if
             else {
                 System.out.println("Error when reading recipe.");
@@ -220,7 +221,6 @@ public class Recipe_Repository {
                         }
                         else {
                             dataBase = tempList;
-                            tempList = null;
                         }
                         System.gc();                    //Attempts to clear null the tempList from memory
                         break;

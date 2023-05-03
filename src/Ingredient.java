@@ -83,7 +83,7 @@ public class Ingredient {
 
         StringBuilder output = new StringBuilder();
         output.append(quantity);
-        output.append("x ");
+        output.append(" ");
         if(measurement != "") {
             output.append(measurement + " ");
         }
@@ -99,6 +99,10 @@ public class Ingredient {
 
     public String getQuantity() {
         return this.quantity;
+    }
+
+    public String getMeasurement() {
+        return this.measurement;
     }
 
 

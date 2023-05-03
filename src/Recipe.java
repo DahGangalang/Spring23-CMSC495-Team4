@@ -3,10 +3,9 @@
  */
 
 import java.util.Date;
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Recipe implements Serializable {
+public class Recipe {
 
     //Necessary fields
     private Metadata metadata;
@@ -47,7 +46,6 @@ public class Recipe implements Serializable {
                     }
                     headerEndIndex++;
                 }
-                
 
                 //Build the ArrayList to pass to header constructor and pass it
                 passToConstructor = new ArrayList<>(headerEndIndex - lineIndex + 1);
