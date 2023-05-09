@@ -5,7 +5,6 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -14,15 +13,14 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.StringJoiner;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import javax.swing.table.DefaultTableModel;
 
 public class Recipe_Tools {
 
-    private static String DATABASEFILENAME = "jdbc:sqlite:recipes.db";
-    private static String TEMPFILENAME = "/Recipe-Files/tempRecipeFile.txt";
+    private final static String DATABASEFILENAME = "jdbc:sqlite:recipes.db";
+    private final static String TEMPFILENAME = "/Recipe-Files/tempRecipeFile.txt";
     
     //For stripping out whitespace surrounding a string
     public static String stripSurroundingWhiteSpace(String input) {
@@ -131,77 +129,7 @@ public class Recipe_Tools {
         return false;
 
     } //End of hasMeasurement
-
-    public static void exportRecipesToXML(ArrayList<Recipe> recipes)
-            throws XMLStreamException, IOException {
-        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
-        XMLStreamWriter xmlWriter = xmlOutputFactory.createXMLStreamWriter(new FileWriter(new File(DATABASEFILENAME)));
-
-        // Start the XML document
-        xmlWriter.writeStartDocument();
-        xmlWriter.writeStartElement("Recipes");
-
-        // Write each recipe as an XML element
-        for (Recipe recipe : recipes) {
-
-            // Start Individual recipe
-            xmlWriter.writeStartElement("Recipe");
-
-            // Write Header information
-            xmlWriter.writeStartElement("Header");
-            xmlWriter.writeStartElement("Title");
-            xmlWriter.writeCharacters(recipe.getHeader().getTitle());
-            xmlWriter.writeEndElement();
-
-            xmlWriter.writeStartElement("Author");
-            xmlWriter.writeCharacters(recipe.getHeader().getAuthor());
-            xmlWriter.writeEndElement();
-
-            xmlWriter.writeStartElement("Tags");
-            for(String tag : recipe.getHeader().getTags()) {
-                xmlWriter.writeStartElement("Tag");
-                xmlWriter.writeCharacters(tag);
-                xmlWriter.writeEndElement();
-            } //End of For
-
-            xmlWriter.writeEndElement();    //End of Header
-
-
-            // Write Ingredient Information
-            xmlWriter.writeStartElement("Ingredients");
-            for (Ingredient ingredient : recipe.getIngredients()) {
-                xmlWriter.writeStartElement("ingredient");
-
-                xmlWriter.writeStartElement("Ingredient Name");
-                xmlWriter.writeCharacters(ingredient.getIngredientName());
-                xmlWriter.writeEndElement();
-
-                xmlWriter.writeStartElement("Quantity");
-                xmlWriter.writeCharacters(ingredient.getQuantity());
-                xmlWriter.writeEndElement();
-
-                xmlWriter.writeEndElement();
-            } //End of For
-
-            xmlWriter.writeEndElement();    //End of Ingredient
-
-            // Write Instruction Information
-            xmlWriter.writeStartElement("Instructions");
-            xmlWriter.writeCharacters(recipe.getInstructions());
-            xmlWriter.writeEndElement();
-
-            xmlWriter.writeEndElement();
-        }
-
-        // End the XML document
-        xmlWriter.writeEndElement();
-        xmlWriter.writeEndDocument();
-
-        // Close the writer
-        xmlWriter.close();
-        
-    } //End of exportRecipesToXML
-
+   
     //Tries to connect to database or start a new if non-existant
     public static void validateDatabase() {
 
@@ -257,7 +185,7 @@ public class Recipe_Tools {
             //Create SQL statement for inserting recipe and ingredients
             String insertSql = "INSERT INTO recipes (name, ingredients, instructions) VALUES (?, ?, ?)";
             String insertIngSql = "INSERT INTO ingredients (recipe_id, qty, measurement, ingredient) VALUES (?, ?, ?, ?)";
-            String selectSql = "SELECT id FROM recipes WHERE name = ?";
+            //String selectSql = "SELECT id FROM recipes WHERE name = ?";
             PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
 
             //Set Values to be inserted in the database
@@ -302,46 +230,159 @@ public class Recipe_Tools {
 
     } //End of addRecipeToDatabase
 
-    /*
-     *  Deprecated Code
+    //To the Programming Gods, I beg forgiveness for the sloppiness of this copy-paste job
+    //Function was originally written for a GUI usage (see RecipeGUI)
+    //Trimmed for Command line usage
+    //Search and retrieve recipe functions
+    public static void searchRecipes(boolean runFromCmdline, String textToSearchFor) {
+
+        //Necessary Variables
+        int recipe_id = 0;
     
+        try {
+          // open SQLite database connection
+          Class.forName("org.sqlite.JDBC");
+          Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+    
+          // create SQL statement for selecting recipes by name
+          String selectSql = "SELECT * FROM recipes WHERE name LIKE ? ORDER BY name";
+    
+          // prepare statement with search string and execute query
+          PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+          selectStmt.setString(1, "%" + textToSearchFor + "%");
+          ResultSet rs = selectStmt.executeQuery();
+    
+          // build table model from result set
+          DefaultTableModel model = new DefaultTableModel(new Object[] {
+            "ID",
+            "Name"
+          }, 0);
+          while (rs.next()) {
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+            model.addRow(new Object[] {
+              id,
+              name
+            });
+            recipe_id = id;
+          }
+    
+          // close database connection
+          conn.close();
+    
+          // display result set in a JTable
+          //JTable table = new JTable(model);
+          //JOptionPane.showMessageDialog(this, new JScrollPane(table));
+          viewRecipe(recipe_id, runFromCmdline);
+    
+        } catch (Exception ex) {
 
-    public static void writeDataBaseToFile(ArrayList<Recipe> recipeDataBase) {
+          // show error message if recipes could not be retrieved
+         System.out.println("Error retrieving recipes:\n" + ex.getMessage());
+        }
+    } //End of searchRecipe
 
-        //Build the absolute file name
-        String absFileName = System.getProperty("user.dir") + "/" + DATABASEFILENAME;
+    //To the Programming Gods, I beg forgiveness for the sloppiness of this copy-paste job
+    //Function was originally written for a GUI usage (see RecipeGUI)
+    //Trimmed for Command line usage
+    public static void viewRecipe(int recipeId, boolean runFromCmdline) {
+        try {
+            // open SQLite database connection
+            Class.forName("org.sqlite.JDBC");
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+    
+            // create SQL statement for selecting recipe by ID
+            String selectSql = "SELECT name, ingredients, instructions FROM recipes WHERE id = ?";
+    
+            // prepare statement for selecting recipe
+            PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+            selectStmt.setInt(1, recipeId);
+    
+            // execute select statement
+            ResultSet rs = selectStmt.executeQuery();
+    
+            // check if recipe exists
+            if (rs.next()) {
+                // get recipe name, ingredients, and instructions
+                String name = rs.getString("name");
+                String ingredients = rs.getString("ingredients");
+                String instructions = rs.getString("instructions");
+    
+                if(runFromCmdline) {
+                  //Displays output to the command line
+                  StringJoiner sj = new StringJoiner("\n");
+                  sj.add("Title");
+                  sj.add(name + "\n");
+                  sj.add("Ingredients");
+                  sj.add(ingredients + "\n");
+                  sj.add("Instructions:");
+                  sj.add(instructions);
+                  sj.add("\n");
+                  System.out.println(sj.toString());
+                }
+            }
+    
+            // close database connection
+            conn.close();
+    
+        } catch (Exception ex) {
+            // display error message if an exception occurs
+            System.out.println("Error Viewing recipe:\n" + ex.getMessage());
+        }
+    } //End of viewRecipe
 
-        try (FileOutputStream fos = new FileOutputStream(absFileName);
-            ObjectOutputStream oos = new ObjectOutputStream(fos)){
-            
-            oos.writeObject(recipeDataBase);
-            System.out.printf("\nWrote %s Successfully.\n", DATABASEFILENAME);
-        
-        } catch(Exception e) {
-            e.printStackTrace();
-        } //End Try/Catch
-    } //End writeDataBaseToFile
+    public static void viewAllRecipes() {
 
-    public static ArrayList<Recipe> readDatabaseFromFile() {
+        ArrayList<String> tableData = new ArrayList<>();
 
-        //Built a receptacle arraylist and the absolute file name
-        ArrayList<Recipe> output = new ArrayList<>();
-        String absFileName = System.getProperty("user.dir") + "/" + DATABASEFILENAME;
+        try {
+            // open SQLite database connection
+            Class.forName("org.sqlite.JDBC");
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+    
+            // create SQL statement for selecting all recipes
+            String selectSql = "SELECT id, name FROM recipes";
+    
+            // prepare statement for selecting all recipes
+            PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+    
+            // execute select statement
+            ResultSet rs = selectStmt.executeQuery();
+    
+            // create table model and add columns
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("ID");
+            model.addColumn("Name");
+    
+            // add rows to table model
+            while (rs.next()) {
+                tableData.add(rs.getString("id"));
+                tableData.add(rs.getString("name"));
+            }
 
-        try (FileInputStream fis = new FileInputStream(absFileName);
-            ObjectInputStream ois = new ObjectInputStream(fis)) {
-            
-            output = (ArrayList<Recipe>)ois.readObject();
-            System.out.printf("\nRead %s Successfully.\n", DATABASEFILENAME);
-            return output;
+            //Display Table
+            StringJoiner rows;
+            StringBuilder tableOutput = new StringBuilder();
+            String rowDivider = "-";
+            for(int i = 0; i < tableData.size(); i++) {
+                rows = new StringJoiner(" | ", " | "," |\n");
+                rows.add(tableData.get(i));
+                rows.add(tableData.get(++i));
+                tableOutput.append(rows.toString() + "\n");
+                for(int j = 0; j < rows.length(); j++) {
+                    tableOutput.append(rowDivider);
+                }
+            }
+            tableOutput.toString();
 
-        } catch(Exception e) {
-            e.printStackTrace();
-            return null;
-        } //End Try/Catch
-    } //End readDatabaseFromFile
 
-    * End of Deprecated Code
-    */
 
+            // close database connection
+            conn.close();
+    
+        } catch (Exception ex) {
+            // show error message if recipes could not be retrieved
+            System.out.println("Error Viewing recipe:\n" + ex.getMessage());
+        }
+    }
 } //End of Recipe_Tools

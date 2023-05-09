@@ -3,6 +3,7 @@
  */
 
 import java.util.Date;
+import java.util.StringJoiner;
 import java.util.ArrayList;
 
 public class Recipe {
@@ -14,6 +15,7 @@ public class Recipe {
     private String instructions;
 
     //Constructor for class
+    //input is to allow for another part of program to pre-process from various sources
     public Recipe(ArrayList<String> input, long passedUID) {
 
         this.metadata = new Metadata();
@@ -108,22 +110,18 @@ public class Recipe {
 
     } //End of newParseRecipe
 
-    
-
-    @Override
     public String toString() { 
 
-        StringBuilder output = new StringBuilder();
-        output.append(header.toString() + "\n");
-        output.append("Ingredients:\n");
+        StringJoiner output = new StringJoiner("\n");
+        output.add(header.toString());
+        output.add("Ingredients:");
         for(Ingredient ingredient : ingredients) {
-            output.append(ingredient.toString());
-            output.append("\n");
+            output.add(ingredient.toString());
         } //End For loop
-        output.append("\n");
-        output.append("Instructions:\n");
-        output.append(instructions);
-        output.append("\n\n");
+        output.add("\n");
+        output.add("Instructions: ");
+        output.add(instructions);
+        output.add("\n");
 
         return output.toString();
 

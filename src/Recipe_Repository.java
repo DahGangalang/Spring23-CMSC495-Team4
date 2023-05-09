@@ -1,5 +1,6 @@
 /*  
  * Driver class for the entirity of the project
+ * Credit to Jonathon Supple for fantastic feedback on performance tweaks
  */
 
 import java.io.BufferedReader;
@@ -30,8 +31,6 @@ public class Recipe_Repository {
         output.append("3 - Search Data Base\n");
         output.append("4 - Add new Recipe to database\n");
         output.append("5 - Add new Recipe via GUI\n");
-        output.append("6 - Read in database\n");
-        output.append("7 - Write out database\n");
         output.append("0 - Exit\n");
         output.append(">");
 
@@ -59,14 +58,13 @@ public class Recipe_Repository {
             if(result == JFileChooser.APPROVE_OPTION) {
                 
                 fileToUse = fileChooser.getSelectedFile();
-                             
-                
+                        
             } //End if
         } //End of If
 
         else{
             fileToUse = fileInput;
-        }
+        } //End of Else
 
         //Read the file line by line and store to arraylist of strings
         ArrayList<String> lines = new ArrayList<>();
@@ -78,8 +76,6 @@ public class Recipe_Repository {
         }
         reader.close();
         return lines;
-
-
     } //End readLinesFromFile
 
     private static void searchDataBase() {
@@ -87,6 +83,8 @@ public class Recipe_Repository {
     } //End searchDataBase
 
     private static void storeNewRecipe(File fileInput) {
+
+        //TODO: implement custom error that is "passed up" from Recipe if bad input detected
 
         try {
             ArrayList<String> lines = readLinesFromFile(fileInput);
@@ -158,7 +156,6 @@ public class Recipe_Repository {
 
             //Reset data for next check
             uid = rand.nextLong();
-            isUnique = true;
 
             //Check is UID has been used
             for(Recipe recipe : dataBase) {
@@ -166,6 +163,9 @@ public class Recipe_Repository {
                     isUnique = false;
                     break;      //Attempts to break from for loop
                 } //End of If
+                else {
+                    isUnique = true;
+                }
             } //End of For
         } //End of While
         
@@ -176,14 +176,18 @@ public class Recipe_Repository {
 
     public static void main(String[] args) {
         
-
+        //Necessary Variables
+        DatabaseManager dataManager;
         Scanner scanner = new Scanner(System.in);
         int userChoice;
-
-        //TODO: handle this 
+        String searchString;
         dataBase = new ArrayList<>();
 
         try {
+
+            //Instaniate variables
+            dataManager= new DatabaseManager();
+
             //Main do-While loop of the program
             do {
                 
@@ -206,27 +210,28 @@ public class Recipe_Repository {
                         break;
 
                     case 4:
-                        storeNewRecipe(null);
+                        searchString = scanner.nextLine();
+                        Recipe_Tools.searchRecipes(true, searchString);
                         break;
 
                     case 5:
-                        Add_Recipe_GUI.main(null);
-                        storeNewRecipe(Recipe_Tools.getTempFile());
-                        break;
 
-                    case 6:
-                        ArrayList<Recipe> tempList = null; //Recipe_Tools.readDatabaseFromFile();
-                        if(tempList == null) {
-                            System.out.println("Something went wrong in reading Database.");
-                        }
-                        else {
-                            dataBase = tempList;
-                        }
-                        System.gc();                    //Attempts to clear null the tempList from memory
-                        break;
+                        //Thanks ChatGPT for helping me when google and stack overflow couldn't
 
-                    case 7:
-                        Recipe_Tools.exportRecipesToXML(dataBase);
+                        //Spin up a fresh GUI
+                        RecipeGUI recipeGui = new RecipeGUI(true);
+                        recipeGui.setVisible(true);
+
+                        //Wait for GUI to close
+                        
+                        try {
+                            System.out.println("\nWaiting on GUI");
+                            while(recipeGui.isVisible()) {
+                                Thread.sleep(1000);    
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
 
                     case 0:

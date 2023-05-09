@@ -2,6 +2,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.sql.*;
+import java.util.StringJoiner;
+
 import javax.swing.table.DefaultTableModel;
 
 public class RecipeGUI extends JFrame implements ActionListener {
@@ -13,7 +15,7 @@ public class RecipeGUI extends JFrame implements ActionListener {
   private int ingredientCount = 0;
   private JTextField searchTextField;
 
-  public RecipeGUI() {
+  public RecipeGUI(Boolean runFromCmdline) {
     // create labels for the recipe, ingredients, and instructions
     recipeLabel = new JLabel("Recipe Name:");
     ingredientsLabel = new JLabel("Ingredients:");
@@ -66,9 +68,16 @@ public class RecipeGUI extends JFrame implements ActionListener {
     // set JFrame properties
     setTitle("Recipe Manager");
     setContentPane(mainPanel);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+    //Should keep Cmdline side if bad exit
+    if(runFromCmdline) {
+      setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }
+    else {
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
     pack();
-    setVisible(true);
+    
   }
 
   public void actionPerformed(ActionEvent e) {
@@ -81,7 +90,7 @@ public class RecipeGUI extends JFrame implements ActionListener {
     } else if (e.getSource() == viewButton) {
       viewAllRecipes();
     } else if (e.getSource() == searchButton) {
-      searchRecipes();
+      searchRecipes(false, "");
     }
   }
   
@@ -124,54 +133,6 @@ public class RecipeGUI extends JFrame implements ActionListener {
       repaint();
     }
   }
-
-
-/*
-  
-  ************This version is much better visually, but I can't get it to work properly with the saveRecipe function**************
- private void addIngredientFields() {
-  if (ingredientCount < 10) {
-    // create new fields for quantity, measurement type, and ingredient name
-    JTextField qtyField = new JTextField(4);
-    JComboBox<String> measurementCombo = new JComboBox<String>(new String[] {"tsp", "tbsp", "oz", "lb", "cup", "pint", "quart", "gallon"});
-    JTextField ingredientField = new JTextField(20);
-
-    JPanel newIngredientPanel;
-
-    // add labels for the first set of ingredient fields
-    if (ingredientCount == 0) {
-      JLabel qtyLabel = new JLabel("Qty");
-      JLabel measurementLabel = new JLabel("Measurement Type");
-      JLabel ingredientLabel = new JLabel("Ingredient Name");
-      newIngredientPanel = new JPanel(new GridLayout(2, 3));
-      newIngredientPanel.add(qtyLabel);
-      newIngredientPanel.add(measurementLabel);
-      newIngredientPanel.add(ingredientLabel);
-      newIngredientPanel.add(qtyField);
-      newIngredientPanel.add(measurementCombo);
-      newIngredientPanel.add(ingredientField);
-    } else {
-      // create panel for new ingredient fields
-      newIngredientPanel = new JPanel(new GridLayout(1, 3));
-      newIngredientPanel.add(qtyField);
-      newIngredientPanel.add(measurementCombo);
-      newIngredientPanel.add(ingredientField);
-    }
-
-    // add new ingredient panel to main ingredient panel
-    ingredientPanel.setLayout(new GridLayout(ingredientCount + 1, 1));
-    ingredientPanel.add(newIngredientPanel);
-
-    // increment ingredient count
-    ingredientCount++;
-
-    // redraw JFrame to show new fields
-    revalidate();
-    repaint();
-  }
-}
-
-*/
 
   private void removeIngredientFields() {
     if (ingredientCount > 1) {
@@ -309,7 +270,7 @@ private void viewAllRecipes() {
                     JTable target = (JTable) e.getSource();
                     int row = target.getSelectedRow();
                     int recipeId = (int) target.getValueAt(row, 0);
-                    viewRecipe(recipeId);
+                    viewRecipe(recipeId, false);
                 }
             }
         });
@@ -327,8 +288,20 @@ private void viewAllRecipes() {
     }
   }
 
-  private void searchRecipes() {
+  public void searchRecipes(boolean runFromCmdline, String cmdLineInput) {
+
+    //Necessary Variables
     int recipe_id = 0;
+    String textToSearchFor;
+    
+    //Build String to search for
+    if(runFromCmdline) {
+      textToSearchFor = cmdLineInput;
+    }
+    else {
+      textToSearchFor = searchTextField.getText();
+    }
+
     try {
       // open SQLite database connection
       Class.forName("org.sqlite.JDBC");
@@ -339,7 +312,7 @@ private void viewAllRecipes() {
 
       // prepare statement with search string and execute query
       PreparedStatement selectStmt = conn.prepareStatement(selectSql);
-      selectStmt.setString(1, "%" + searchTextField.getText() + "%");
+      selectStmt.setString(1, "%" + textToSearchFor + "%");
       ResultSet rs = selectStmt.executeQuery();
 
       // build table model from result set
@@ -363,7 +336,7 @@ private void viewAllRecipes() {
       // display result set in a JTable
       //JTable table = new JTable(model);
       //JOptionPane.showMessageDialog(this, new JScrollPane(table));
-      viewRecipe(recipe_id);
+      viewRecipe(recipe_id, runFromCmdline);
 
     } catch (Exception ex) {
       // show error message if recipes could not be retrieved
@@ -371,7 +344,7 @@ private void viewAllRecipes() {
     }
   }
   
-  private void viewRecipe(int recipeId) {
+  private void viewRecipe(int recipeId, boolean runFromCmdline) {
     try {
         // open SQLite database connection
         Class.forName("org.sqlite.JDBC");
@@ -394,11 +367,25 @@ private void viewAllRecipes() {
             String ingredients = rs.getString("ingredients");
             String instructions = rs.getString("instructions");
 
-            // display recipe in a dialog box
-            JOptionPane.showMessageDialog(this, "Recipe Name: " + name + "\n\n" +
-                                                "Ingredients:\n" + ingredients + "\n\n" +
-                                                "Instructions:\n" + instructions,
-                                                "View Recipe", JOptionPane.INFORMATION_MESSAGE);
+            if(runFromCmdline) {
+              //Displays output to the command line
+              StringJoiner sj = new StringJoiner("\n");
+              sj.add("Title");
+              sj.add(name + "\n");
+              sj.add("Ingredients");
+              sj.add(ingredients + "\n");
+              sj.add("Instructions:");
+              sj.add(instructions);
+              sj.add("\n");
+              System.out.println(sj.toString());
+            }
+            else {
+              // display recipe in a dialog box
+              JOptionPane.showMessageDialog(this, "Recipe Name: " + name + "\n\n" +
+                                                  "Ingredients:\n" + ingredients + "\n\n" +
+                                                  "Instructions:\n" + instructions,
+                                                  "View Recipe", JOptionPane.INFORMATION_MESSAGE);
+            }
         } else {
             // display error message if recipe does not exist
             JOptionPane.showMessageDialog(this, "Recipe not found.", "View Recipe", JOptionPane.ERROR_MESSAGE);
@@ -411,13 +398,13 @@ private void viewAllRecipes() {
         // display error message if an exception occurs
         JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "View Recipe", JOptionPane.ERROR_MESSAGE);
     }
-}
+  }
   public static void main(String[] args) throws ClassNotFoundException {
     
     Recipe_Tools.validateDatabase();
 
     SwingUtilities.invokeLater(() -> {
-        RecipeGUI gui = new RecipeGUI();
+        RecipeGUI gui = new RecipeGUI(false);
         gui.setVisible(true);
         }
     );
