@@ -1,0 +1,15 @@
+***Section: Header
+Title: Cucumber Tomato Salad
+Author: Amelia Black
+Tag: salad
+Tag: cucumber, tomato 
+***Section: Ingredients
+3 English cucumbers, sliced into quarters
+2 vine ripe tomatoes, sliced into quarters
+1 red onion, sliced
+2 tablespoons of red wine vinegar
+3 tablespoons of extra-virgin olive oil
+Salt and pepper
+***Section: Instructions
+Step 1 Combine all ingredients in a bowl. 
+Step 2 Dress with vinegar and oil, salt and pepper, to your taste.

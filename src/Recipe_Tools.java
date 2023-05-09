@@ -19,6 +19,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class Recipe_Tools {
 
+    //Some constants for database interaction
     private final static String DATABASEFILENAME = "jdbc:sqlite:recipes.db";
     private final static String TEMPFILENAME = "/Recipe-Files/tempRecipeFile.txt";
     
@@ -242,7 +243,7 @@ public class Recipe_Tools {
         try {
           // open SQLite database connection
           Class.forName("org.sqlite.JDBC");
-          Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+          Connection conn = DriverManager.getConnection(DATABASEFILENAME);
     
           // create SQL statement for selecting recipes by name
           String selectSql = "SELECT * FROM recipes WHERE name LIKE ? ORDER BY name";
@@ -307,14 +308,19 @@ public class Recipe_Tools {
                 String name = rs.getString("name");
                 String ingredients = rs.getString("ingredients");
                 String instructions = rs.getString("instructions");
+
+                String[] splitIngredients = ingredients.split(",");
     
                 if(runFromCmdline) {
                   //Displays output to the command line
                   StringJoiner sj = new StringJoiner("\n");
-                  sj.add("Title");
-                  sj.add(name + "\n");
-                  sj.add("Ingredients");
-                  sj.add(ingredients + "\n");
+                  sj.add("\n");
+                  sj.add("Title: " + name);
+                  sj.add("Ingredients:");
+                  System.out.println(splitIngredients.length);
+                  for(int i = 0; i < splitIngredients.length-1; i+= 3) {
+                    sj.add(splitIngredients[i] + splitIngredients[i+1] + splitIngredients[i+2]);
+                  }
                   sj.add("Instructions:");
                   sj.add(instructions);
                   sj.add("\n");
@@ -328,6 +334,7 @@ public class Recipe_Tools {
         } catch (Exception ex) {
             // display error message if an exception occurs
             System.out.println("Error Viewing recipe:\n" + ex.getMessage());
+            ex.printStackTrace();
         }
     } //End of viewRecipe
 

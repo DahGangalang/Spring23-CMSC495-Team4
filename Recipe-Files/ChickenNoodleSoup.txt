@@ -1,0 +1,16 @@
+***Section: Header
+Title: Chicken Noodle Soup
+Author: Amelia Black
+Tag: soup
+Tag: chicken, noodle
+Tags: celery, carrots
+***Section: Ingredients
+4 cans of chicken broth
+1 pound of chopped cooked chicken breast
+1 cup of sliced celery
+1 cup of egg noodles
+1 cup of sliced carrots
+***Section: Instructions
+Step 1 Add onion and celery to pot and cook on medium heat until tender. 
+Step 2 Add chicken broth, egg noodles, and carrots. 
+Step 3 Reduce heat and simmer for 20 minutes. 

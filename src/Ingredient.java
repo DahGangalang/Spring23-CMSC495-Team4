@@ -4,6 +4,7 @@
  * Class for storing the totality of a recipe
  */
 
+import java.util.StringJoiner;
 import java.util.regex.PatternSyntaxException;
 
 public class Ingredient {
@@ -89,6 +90,16 @@ public class Ingredient {
         return output.toString();
     } //End of toString
 
+    public String toGUIString() {
+
+        StringJoiner output = new StringJoiner(", ");
+        output.add(quantity);
+        output.add(measurement);
+        output.add(ingredientName);
+
+        return output.toString();
+    }
+
     //Getters
     public String getIngredientName() {
         return this.ingredientName;
@@ -101,4 +112,5 @@ public class Ingredient {
     public String getMeasurement() {
         return this.measurement;
     } //End of getMeasurement
+
 } //End of Ingredient

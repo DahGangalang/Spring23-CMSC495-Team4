@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.StringJoiner;
 
 import javax.swing.table.DefaultTableModel;
@@ -88,7 +89,7 @@ public class RecipeGUI extends JFrame implements ActionListener {
     } else if (e.getSource() == saveButton) {
       saveRecipe();
     } else if (e.getSource() == viewButton) {
-      viewAllRecipes();
+      viewAllRecipes(false);
     } else if (e.getSource() == searchButton) {
       searchRecipes(false, "");
     }
@@ -164,9 +165,6 @@ public class RecipeGUI extends JFrame implements ActionListener {
         // create SQL statement for inserting ingredient
         String insertIngSql = "INSERT INTO ingredients (recipe_id, qty, measurement, ingredient) VALUES (?, ?, ?, ?)";
 
-        // create SQL statement for selecting recipe by name
-        String selectSql = "SELECT id FROM recipes WHERE name = ?";
-
         // prepare statement for inserting recipe
         PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
 
@@ -176,7 +174,7 @@ public class RecipeGUI extends JFrame implements ActionListener {
         insertStmt.setString(3, instructionsTextArea.getText());
 
         // execute insert statement and get the generated key for the new recipe
-        int numRows = insertStmt.executeUpdate();
+        insertStmt.executeUpdate();
         ResultSet rs = insertStmt.getGeneratedKeys();
         int recipeId = -1;
         if (rs.next()) {
@@ -233,7 +231,8 @@ public class RecipeGUI extends JFrame implements ActionListener {
     return sb.toString();
   }
 
-private void viewAllRecipes() {
+private void viewAllRecipes(boolean runFromCmdline) {
+
     try {
         // open SQLite database connection
         Class.forName("org.sqlite.JDBC");
@@ -274,7 +273,6 @@ private void viewAllRecipes() {
                 }
             }
         });
-        
 
         // display table in a scroll pane
         JOptionPane.showMessageDialog(this, new JScrollPane(table), "View All Recipes", JOptionPane.PLAIN_MESSAGE);
@@ -399,9 +397,135 @@ private void viewAllRecipes() {
         JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "View Recipe", JOptionPane.ERROR_MESSAGE);
     }
   }
+
+  
+  public void recipeListToConsole() {
+    
+    ArrayList<String> recipesList = new ArrayList<>();
+      
+    try {
+          // Open SQLite database connection
+          Class.forName("org.sqlite.JDBC");
+          Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+  
+          // Create SQL statement for selecting all recipes
+          String selectSql = "SELECT id, name FROM recipes";
+  
+          // Prepare statement for selecting all recipes
+          PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+  
+          // Execute select statement
+          ResultSet rs = selectStmt.executeQuery();
+  
+          // Add rows to recipesList
+          while (rs.next()) {
+              int id = rs.getInt("id");
+              String name = rs.getString("name");
+              String recipeInfo = id + "\t" + name;
+              recipesList.add(recipeInfo);
+          }
+  
+          // Close database connection
+          conn.close();
+  
+      } catch (Exception ex) {
+          // Show error message if recipes could not be retrieved
+          System.out.println("Error retrieving recipes: \n (in recipeListToConsole)\n" + ex.getMessage());
+      }
+  
+      //Output results - header first
+      System.out.println("\n\nID:\tTitle:");
+      for(String recipe : recipesList) {
+        System.out.println(recipe);
+      }
+  } //End of
+
+  public void saveRecipe(Recipe recipe) {
+    
+    try {
+        // Open SQLite database connection
+        Class.forName("org.sqlite.JDBC");
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+
+        // Create SQL statement for inserting recipe
+        String insertSql = "INSERT INTO recipes (name, ingredients, instructions) VALUES (?, ?, ?)";
+
+        // Create SQL statement for inserting ingredient
+        String insertIngSql = "INSERT INTO ingredients (recipe_id, qty, measurement, ingredient) VALUES (?, ?, ?, ?)";
+
+        // Prepare statement for inserting recipe
+        PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+
+        //Prepare ingredients list to be imported
+        StringJoiner ingredientsList = new StringJoiner(", ");
+        for(Ingredient ingredient : recipe.getIngredients()) {
+          ingredientsList.add(ingredient.toGUIString());
+        }
+
+        // Set values for recipe name and instructions
+        insertStmt.setString(1, recipe.getTitle());
+        insertStmt.setString(2, ingredientsList.toString());
+        insertStmt.setString(3, recipe.getInstructions());
+
+        // Execute insert statement and get the generated key for the new recipe
+        insertStmt.executeUpdate();
+        ResultSet rs = insertStmt.getGeneratedKeys();
+        int recipeId = -1;
+        if (rs.next()) {
+            recipeId = rs.getInt(1);
+        }
+
+        // Prepare statement for inserting ingredient
+        PreparedStatement insertIngStmt = conn.prepareStatement(insertIngSql);
+
+        // Iterate through ingredients list and insert each ingredient
+        for (Ingredient ingredient : recipe.getIngredients()) {
+
+            // Set values for ingredient fields and execute insert statement
+            insertIngStmt.setInt(1, recipeId);
+            insertIngStmt.setString(2, ingredient.getQuantity()); // quantity
+            insertIngStmt.setString(3, ingredient.getMeasurement()); // measurement
+            insertIngStmt.setString(4, ingredient.getIngredientName()); // ingredient
+            insertIngStmt.executeUpdate();
+        }
+
+        // Show success message
+        System.out.println("Successfully Added " + recipe.getTitle() + " to Database\n");
+
+    } catch (Exception ex) {
+        // Show error message if recipe could not be saved
+        JOptionPane.showMessageDialog(this, "Error saving recipe: " + ex.getMessage());
+        System.out.println("Error saving recipe: " + ex.getMessage());
+    }
+  }
+
   public static void main(String[] args) throws ClassNotFoundException {
     
-    Recipe_Tools.validateDatabase();
+    try {
+      // create SQLite database connection
+      Class.forName("org.sqlite.JDBC");
+      Connection conn = DriverManager.getConnection("jdbc:sqlite:recipes.db");
+
+      // create SQL statement for creating recipes table
+      String createRecipesTableSql = "CREATE TABLE recipes (id INTEGER PRIMARY KEY, name TEXT, ingredients TEXT, instructions TEXT, created_at TEXT)";
+
+      // execute SQL statement to create recipes table
+      Statement createRecipesStmt = conn.createStatement();
+      createRecipesStmt.executeUpdate(createRecipesTableSql);
+
+      // create SQL statement for creating ingredients table
+      String createIngredientsTableSql = "CREATE TABLE ingredients (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER, qty TEXT, measurement TEXT, ingredient TEXT, FOREIGN KEY(recipe_id) REFERENCES recipes(id))";
+
+      // execute SQL statement to create ingredients table
+      Statement createIngredientsStmt = conn.createStatement();
+      createIngredientsStmt.executeUpdate(createIngredientsTableSql);
+
+      // close database connection
+      conn.close();
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
 
     SwingUtilities.invokeLater(() -> {
         RecipeGUI gui = new RecipeGUI(false);
@@ -409,4 +533,5 @@ private void viewAllRecipes() {
         }
     );
   }
+
 }

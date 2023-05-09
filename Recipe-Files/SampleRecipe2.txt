@@ -1,7 +1,0 @@
-***Section: Header
-Author: Some Guy
-Title: Good Stuff
-***Section: Ingredients
-5 good stuff
-***Section: Instructions
-just put it all in a pot and boild still it smells good

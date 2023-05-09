@@ -1,0 +1,15 @@
+***Section: Header
+Title: Grilled Cheese with pickles
+Author: Amelia Black
+Tag: sandwich
+Tag: bread, cheese, pickles
+***Section: Ingredients
+2 slices whole grain bread or bread of choice
+1 slice of cheese
+2 slices of dill pickles
+1 tablespoon of butter
+***Section: Instructions
+Step 1 Preheat saucepan on medium heat. Add the butter and begin melting it. 
+Step 2 Add the cheese to one of the slices of bread, and lay both slices in the saucepan. 
+Step 3 After 3-5 minutes add the pickles on top of the cheese and add the lone slice to the rest of the sandwich. 
+Step 4 Cut the sandwich in half and enjoy!

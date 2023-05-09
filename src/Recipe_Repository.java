@@ -26,11 +26,10 @@ public class Recipe_Repository {
         output.append("\n");
         output.append("Main Menu\n");
         output.append("------------------------------\n");
-        output.append("1 - Display Entire Data Base\n");
-        output.append("2 - Diplay Titles in Data Base\n");
-        output.append("3 - Search Data Base\n");
-        output.append("4 - Add new Recipe to database\n");
-        output.append("5 - Add new Recipe via GUI\n");
+        output.append("1 - Diplay Titles in Data Base\n");
+        output.append("2 - Search Data Base\n");
+        output.append("3 - Add Recipe from File to database\n");
+        output.append("4 - Add new Recipe via GUI\n");
         output.append("0 - Exit\n");
         output.append(">");
 
@@ -56,9 +55,7 @@ public class Recipe_Repository {
             //Finally choose the file and import it
             int result = fileChooser.showOpenDialog(null);
             if(result == JFileChooser.APPROVE_OPTION) {
-                
-                fileToUse = fileChooser.getSelectedFile();
-                        
+                fileToUse = fileChooser.getSelectedFile();   
             } //End if
         } //End of If
 
@@ -78,98 +75,12 @@ public class Recipe_Repository {
         return lines;
     } //End readLinesFromFile
 
-    private static void searchDataBase() {
-        //TODO
-    } //End searchDataBase
-
-    private static void storeNewRecipe(File fileInput) {
-
-        //TODO: implement custom error that is "passed up" from Recipe if bad input detected
-
-        try {
-            ArrayList<String> lines = readLinesFromFile(fileInput);
-            if(lines != null) {
-                Recipe tempRecipe = new Recipe(lines, generateUID());
-                dataBase.add(tempRecipe);
-                Recipe_Tools.addRecipeFromFileToDatabase(tempRecipe);
-            } //End if
-            else {
-                System.out.println("Error when reading recipe.");
-            } //End else
-
-        } catch(Exception e) {
-
-            System.out.println("Caught an exception in storeNewRecipe function");
-            e.printStackTrace();
-
-        } //End Try/Catch
-    } //End storeNewRecipe
-
-    private static void displayEntries(String type) {
-
-        //Make sure there's something in the database to display
-        if(dataBase.isEmpty()) {
-            System.out.println("\nDatabase is empty!");
-            return;
-        } //End If
-
-        //TODO: Should we be using an enum here?
-        switch(type) {
-
-            //Option to dump entire database
-            case "allAll":
-                for(Recipe currRecipe : dataBase) {
-                    System.out.printf("\n%s\n\n", currRecipe.toString());
-                } //End For
-                return;     //Acting as a break, but should cut processing a tiny bit
-
-            //Option to show just the titles in the database
-            case "allTitles":
-                int i = 0;
-                System.out.println();
-                for(Recipe currRecipe : dataBase) {
-                    System.out.printf("%d - %s\n", i++, currRecipe.getTitle());
-                } //End for loop
-                return;     //Acting as a break, but should cut processing a tiny bit
-
-            //Takes input and displays that recipe number
-            default:
-                try {
-                    int entryNumber = Integer.parseInt(type);
-                    System.out.printf("\n%s\n\n", dataBase.get(entryNumber).toString());
-                    return;
-                } catch(Exception e) {
-                    //TODO: implement error handling
-                } //End Try/Catch
-        } //End Switcjh
-    } //End displayEntries
-
     //Generates a long int for use as the UID of recipes
     //Doesn't need to be secure, just unique
     private static long generateUID() {
         
         Random rand = new Random(dataBase.size());
-        Boolean isUnique = false;
         long uid = rand.nextLong();
-
-        while(isUnique == false) {
-
-            //Reset data for next check
-            uid = rand.nextLong();
-
-            //Check is UID has been used
-            for(Recipe recipe : dataBase) {
-                if(recipe.getUID() == uid) {
-                    isUnique = false;
-                    break;      //Attempts to break from for loop
-                } //End of If
-                else {
-                    isUnique = true;
-                }
-            } //End of For
-        } //End of While
-        
-        rand = null;    //Attempts to clear the rand to free extra memory
         return uid;
 
     } //End of generateUID
@@ -177,56 +88,59 @@ public class Recipe_Repository {
     public static void main(String[] args) {
         
         //Necessary Variables
-        DatabaseManager dataManager;
+        RecipeGUI gui = new RecipeGUI(true);
         Scanner scanner = new Scanner(System.in);
         int userChoice;
         String searchString;
         dataBase = new ArrayList<>();
 
-        try {
+        //Prime the database
+        Recipe_Tools.validateDatabase();
 
-            //Instaniate variables
-            dataManager= new DatabaseManager();
+        try {
 
             //Main do-While loop of the program
             do {
                 
                 showMenu();
                 userChoice = scanner.nextInt();
-                scanner.reset();
+                
 
                 switch(userChoice) {
 
+                    //Display Entire Data Base
                     case 1: 
-                        displayEntries("allAll");
+                        gui.recipeListToConsole();
                         break;
 
-                    case 2:
-                        displayEntries("allTitles");
-                        break;
-
-                    case 3: 
-                        searchDataBase();
-                        break;
-
-                    case 4:
+                    //Search Data Base
+                    case 2: 
+                        System.out.print("\nSearch for which recipe?\n>");
+                        scanner.nextLine();     //Gets rid of the hanging newline
                         searchString = scanner.nextLine();
+                        System.out.println("Attempting to search for " + searchString);
                         Recipe_Tools.searchRecipes(true, searchString);
                         break;
 
-                    case 5:
+                    //Add Recipe from File to database
+                    case 3:
+                        long uid = generateUID();
+                        Recipe tempRecipe = new Recipe(readLinesFromFile(null), uid);
+                        gui.saveRecipe(tempRecipe);
+                        break;
+
+                    //Add new Recipe via GUI
+                    case 4:
 
                         //Thanks ChatGPT for helping me when google and stack overflow couldn't
 
                         //Spin up a fresh GUI
-                        RecipeGUI recipeGui = new RecipeGUI(true);
-                        recipeGui.setVisible(true);
+                        gui.setVisible(true);
 
                         //Wait for GUI to close
-                        
                         try {
-                            System.out.println("\nWaiting on GUI");
-                            while(recipeGui.isVisible()) {
+                            System.out.println("\nWaiting on GUI\n");
+                            while(gui.isVisible()) {
                                 Thread.sleep(1000);    
                             }
                         } catch(Exception e) {
